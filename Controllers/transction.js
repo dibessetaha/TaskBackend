@@ -1,12 +1,37 @@
 const Transaction = require("../models/transaction.model");
 const moment = require("moment");
-exports.getAllTransactions = async (req, res) => {
+const TransactionType = require("../models/transactionType.model");
+
+const getAllTransactions = async (req, res) => {
   Transaction.find()
+    .populate("company", "name")
     .then((transactions) => res.status(200).json(transactions))
     .catch((error) => res.status(400).json(error));
 };
 
-exports.filterTransaction = async (req, res) => {
+const postTransaction = async (req, res) => {
+  const { deposit, withdrew, date, company, postBy, type } = req.body;
+
+  const transaction = new Transaction({
+    deposit,
+    withdrew,
+    date,
+    company,
+    postBy,
+    type,
+  });
+
+  transaction
+    .save()
+    .then((transaction) => {
+      res.status(200).json(transaction);
+    })
+    .catch((error) => {
+      res.status(400).json(error);
+    });
+};
+
+const transactionPerPeriod = async (req, res) => {
   const { period } = req.body;
   let startDate, endDate;
 
@@ -32,13 +57,13 @@ exports.filterTransaction = async (req, res) => {
       break;
 
     case 5:
-      startDate = moment().subtract(365, "days").toDate();
+      startDate = moment().subtract(366, "days").toDate();
       endDate = new Date();
       break;
 
     case 6:
-      this.getAllTransactions(req, res);
-      break;
+      getAllTransactions(req, res);
+      return;
 
     default:
       res.status(400).send("Invalid date range");
@@ -53,35 +78,42 @@ exports.filterTransaction = async (req, res) => {
   };
 
   try {
-    const transactions = await Transaction.find(query).exec();
+    const transactions = await Transaction.find(query)
+      .populate("company", "name")
+      .exec();
     res.status(200).json(transactions);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-/* 
-  decomment this block of code if you want to add some new transaction
-*/
-// exports.postTransaction = async (req, res) => {
-//   const { deposit, withdrew, date, company, postBy } = req.body;
+const transactionPerType = async (req, res) => {
+  try {
+    const { type } = req.params;
 
-//   const transaction = new Transaction({
-//     deposit,
-//     withdrew,
-//     date,
-//     company,
-//     postBy,
-//   });
+    const transactionType = await TransactionType.findOne({ name: type });
 
-//   transaction
-//     .save()
-//     .then((transaction) => {
-//       res.status(200).json(transaction);
-//     })
-//     .catch((error) => {
-//       res.status(400).json(error);
-//     });
-// };
+    if (!transactionType) {
+      return res.status(404).json({
+        message: "Transaction Type not found",
+      });
+    }
+    const transactions = await Transaction.find({
+      transactionType: transactionType._id,
+    })
+      .populate("company", "name")
+      .populate("postBy", "username");
 
-exports.getTransactionPerPeriod = (res, req) => {};
+    return res.status(200).json(transactions);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+module.exports = {
+  getAllTransactions,
+  postTransaction,
+  transactionPerPeriod,
+  transactionPerType,
+};

@@ -2,11 +2,9 @@ const express = require("express");
 const router = express.Router();
 const transactionCtrl = require("../Controllers/transction");
 
-router.get("/transactions", transactionCtrl.getAllTransactions);
-router.get("/transactionPeriod", transactionCtrl.filterTransaction);
-/* 
-  decomment this instruction bellow if you want to add some new transaction
-*/
-// router.post("/transactions", transactionCtrl.postTransaction);
+router.get("/", transactionCtrl.getAllTransactions);
+router.post("/", transactionCtrl.postTransaction);
+router.get("/period", transactionCtrl.transactionPerPeriod);
+router.get("/:type", transactionCtrl.transactionPerType);
 
 module.exports = router;
