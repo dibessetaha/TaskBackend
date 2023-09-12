@@ -10,7 +10,8 @@ const getAllTransactions = async (req, res) => {
 };
 
 const postTransaction = async (req, res) => {
-  const { deposit, withdrew, date, company, postBy, type } = req.body;
+  const { deposit, withdrew, date, company, postBy, transactionType } =
+    req.body;
 
   const transaction = new Transaction({
     deposit,
@@ -18,7 +19,7 @@ const postTransaction = async (req, res) => {
     date,
     company,
     postBy,
-    type,
+    transactionType,
   });
 
   transaction
@@ -102,7 +103,8 @@ const transactionPerType = async (req, res) => {
       transactionType: transactionType._id,
     })
       .populate("company", "name")
-      .populate("postBy", "username");
+      .populate("postBy", "username")
+      .populate("transactionType", "name");
 
     return res.status(200).json(transactions);
   } catch (error) {

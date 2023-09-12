@@ -4,6 +4,7 @@ const app = express();
 const transactionRoutes = require("./routes/transaction");
 const usersRoutes = require("./routes/user");
 const companyRoutes = require("./routes/company");
+const transactionTypeRoutes = require("./routes/trasactionType");
 
 app.use(express.json());
 
@@ -19,5 +20,6 @@ mongoose
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/users", usersRoutes);
 app.use("/api/companies", companyRoutes);
+app.use("/api/transactionType", transactionTypeRoutes);
 
 module.exports = app;
