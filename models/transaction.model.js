@@ -20,8 +20,7 @@ const transactionSchema = mongoose.Schema(
     },
 
     postBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Users",
+      type: String,
       required: true,
     },
   },
